@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catalog MVP</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <main class="page">
+    <h1>Каталог товаров</h1>
+
+    <section class="toolbar">
+      <input id="searchInput" type="text" placeholder="Поиск по бренду или названию" />
+      <select id="categorySelect">
+        <option value="">Все общие категории</option>
+        <option value="wear">wear</option>
+        <option value="shoes">shoes</option>
+        <option value="bags">bags</option>
+        <option value="goods">goods</option>
+        <option value="accessories">accessories</option>
+      </select>
+      <button id="reloadButton" type="button">Обновить</button>
+    </section>
+
+    <p id="statusText">Загрузка...</p>
+    <section id="productsGrid" class="products-grid"></section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
