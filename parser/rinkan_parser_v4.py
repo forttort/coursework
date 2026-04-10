@@ -43,6 +43,15 @@ STOP_LABELS = {
     "悪質サイトへのご注意", "ギフトラッピングサービス", "採用情報", "ASKWATCH ONLINE",
 }
 
+BAD_BRAND_VALUES = {
+    "配送＆返品",
+    "注文 / 配送＆返品",
+    "注文",
+    "配送",
+    "返品",
+    "ASKWATCH ONLINE",
+}
+
 HELPER_STOP_LINES = {"状態ランクとは？", "サイズガイド"}
 
 
@@ -201,13 +210,21 @@ def normalize_brand_name(value: Optional[str]) -> Optional[str]:
     value = clean_text(value)
     if not value:
         return None
+
+    if value in BAD_BRAND_VALUES:
+        return None
+
     parts = [clean_text(part) for part in re.split(r"[/／]", value) if clean_text(part)]
     if not parts:
         return None
+
     latin_parts = [part for part in parts if re.search(r"[A-Za-z]", part)]
-    if latin_parts:
-        return latin_parts[-1]
-    return parts[-1]
+    candidate = latin_parts[-1] if latin_parts else parts[-1]
+
+    if candidate in BAD_BRAND_VALUES:
+        return None
+
+    return candidate
 
 
 def normalize_size_text(value: Optional[str]) -> Optional[str]:
@@ -264,10 +281,14 @@ def extract_description(lines: list[str]) -> Optional[str]:
 def parse_detail_page(page_url: str, session: requests.Session) -> RawRinkanProduct:
     soup = get_soup(page_url, session)
     lines = get_clean_lines(soup)
+    detail_lines = lines
+    if "商品詳細" in lines:
+        detail_start = lines.index("商品詳細")
+        detail_lines = lines[detail_start:]
     brand_top, title_top, model_top = extract_product_headings(soup)
     product_id_match = re.search(r"/products/([A-Za-z0-9-]+)", page_url)
     fallback_product_id = product_id_match.group(1) if product_id_match else ""
-    source_product_id = clean_text(extract_block_after_label(lines, "品番")) or fallback_product_id
+    source_product_id = clean_text(extract_block_after_label(detail_lines, "品番")) or fallback_product_id
     if not source_product_id:
         raise ValueError(f"Не удалось извлечь source_product_id со страницы {page_url}")
     title = clean_text(title_top) or clean_text(model_top) or ""
@@ -276,11 +297,13 @@ def parse_detail_page(page_url: str, session: requests.Session) -> RawRinkanProd
     price_original = extract_price(soup.get_text(" ", strip=True))
     image_urls = extract_product_image_urls(soup, page_url, source_product_id)
     main_image_url = image_urls[0] if image_urls else None
-    brand_raw = extract_block_after_label(lines, "ブランド")
-    brand_name = normalize_brand_name(brand_raw) or normalize_brand_name(brand_top)
-    condition_text = extract_block_after_label(lines, "商品の状態")
-    size_text = normalize_size_text(extract_block_after_label(lines, "サイズ") or extract_block_after_label(lines, "実寸"))
-    description = extract_description(lines)
+    brand_raw = extract_block_after_label(detail_lines, "ブランド")
+    brand_name = normalize_brand_name(brand_raw)
+    condition_text = clean_block_value(extract_block_after_label(detail_lines, "商品の状態"))
+    size_text = normalize_size_text(
+        extract_block_after_label(detail_lines, "サイズ") or extract_block_after_label(detail_lines, "実寸")
+    )
+    description = extract_description(detail_lines)
     return RawRinkanProduct(
         title=title,
         source_product_id=source_product_id,
