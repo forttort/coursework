@@ -1,12 +1,12 @@
 # Coursework
 
-Веб-каталог fashion-товаров с японских площадок. Текущая версия репозитория — это MVP, в котором уже есть парсер первого источника, минимальный backend на `FastAPI`, статический frontend и sample-данные для демонстрации каталога.
+Веб-каталог fashion-товаров с японских площадок. Текущая версия репозитория — это MVP, в котором уже есть парсер первого источника, минимальный backend на `FastAPI`, статический frontend и JSON-данные для демонстрации каталога.
 
 ## Что уже есть
 - `parser/rinkan_parser_v4.py` — рабочий парсер для `RINKAN`
 - `backend/main.py` — backend API и раздача статических HTML-страниц
 - `frontend/index.html` и `frontend/product.html` — каталог и страница товара
-- `data/products.sample.json` — тестовый набор данных, который сейчас использует backend
+- `rinkan_products_v4.json` — текущий JSON-файл, который сейчас использует backend
 - `sql/schema_v2.sql` — актуальная схема БД под загрузку товаров
 - `docs/*` — документация по API, БД, фронту, парсеру и текущему состоянию
 
@@ -15,7 +15,7 @@
 
 1. Парсер собирает товары с `RINKAN`
 2. Результат сохраняется в JSON
-3. Backend читает sample JSON из `data/products.sample.json`
+3. Backend читает JSON из `rinkan_products_v4.json`
 4. Frontend получает товары через `/api/products`
 
 То есть сейчас проект работает без PostgreSQL и без отдельного loader.
@@ -30,6 +30,15 @@
 
 ## Быстрый запуск
 
+### Самый простой запуск из PyCharm
+Если не хочется возиться с интерпретаторами и параметрами, можно просто запускать готовые файлы:
+
+- `run_site.py` — поднимает сайт
+- `run_parser_new_arrivals.py` — запускает парсер по `new-arrivals` и сохраняет в `rinkan_products_v4.json`
+
+Оба файла сами используют интерпретатор проекта:
+- `/Users/danil/coursework/.venv/bin/python`
+
 ### Через терминал
 ```bash
 cd /Users/danil/coursework
@@ -43,7 +52,17 @@ uvicorn backend.main:app --reload
 - `http://127.0.0.1:8000/`
 
 ### Из PyCharm
-Можно запускать модуль `uvicorn` с параметрами:
+Теперь можно вообще просто запускать файл `backend/main.py` кнопкой `Run`.
+
+Самый простой вариант:
+
+- открыть `backend/main.py`
+- нажать `Run`
+- открыть `http://127.0.0.1:8000/`
+
+В этом режиме сервер стартует без авто-перезагрузки, зато без проблем с импортом модуля `backend`.
+
+Если хочешь именно через отдельную конфигурацию, можно запускать модуль `uvicorn` с параметрами:
 
 - Module name: `uvicorn`
 - Parameters: `backend.main:app --reload`
@@ -66,17 +85,17 @@ uvicorn backend.main:app --reload
 - `parser` — парсер первого источника `RINKAN`
 - `loader` — место под будущий загрузчик данных в PostgreSQL
 - `sql` — схемы БД
-- `data` — sample-данные для локального запуска
+- `data` — вспомогательные данные проекта
 - `docs` — актуальная документация по проекту
 
 ## Текущее ограничение
 - backend пока читает JSON, а не базу данных
-- loader в PostgreSQL ещё не реализован
+- loader в PostgreSQL уже реализован, но backend пока не переведен на БД
 - нет пагинации, сортировки и расширенных фильтров
 - frontend минимальный и без UI-фреймворка
 
 ## Следующий логичный этап
-1. Реализовать `loader/load_rinkan_to_postgres.py`
-2. Подключить backend к PostgreSQL
-3. Перевести каталог с sample JSON на реальные запросы к БД
+1. Поднять PostgreSQL по `sql/schema_v2.sql` или обновить существующую БД через `sql/alter_products_tracking.sql`
+2. Загрузить данные через `loader/load_rinkan_to_postgres.py`
+3. Перевести каталог с JSON на реальные запросы к БД
 4. Расширить API и фильтры на frontend

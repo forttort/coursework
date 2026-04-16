@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
+import uvicorn
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_FILE = BASE_DIR / "data" / "products.sample.json"
+DATA_FILE = BASE_DIR / "rinkan_products_v4.json"
 FRONTEND_DIR = BASE_DIR / "frontend"
 
 app = FastAPI(title="Coursework Catalog MVP")
@@ -42,9 +43,9 @@ def health() -> dict[str, str]:
 
 @app.get("/api/products")
 def list_products(
-    q: str | None = Query(default=None),
-    general_category: str | None = Query(default=None),
-    brand: str | None = Query(default=None),
+    q: Optional[str] = Query(default=None),
+    general_category: Optional[str] = Query(default=None),
+    brand: Optional[str] = Query(default=None),
 ) -> list[dict[str, Any]]:
     products = load_products()
 
@@ -89,3 +90,7 @@ def index() -> FileResponse:
 @app.get("/product.html")
 def product_page() -> FileResponse:
     return FileResponse(FRONTEND_DIR / "product.html")
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)

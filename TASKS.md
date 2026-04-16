@@ -7,12 +7,12 @@
 - синхронизировать default output JSON
 - убрать путаницу между `v4` и `v7`
 
-### 2. Реализовать loader
-- создать `loader/load_rinkan_to_postgres.py`
+### 2. Доработать loader
 - читать JSON из парсера
 - делать upsert в справочники
 - делать upsert в `products`
 - обновлять `product_images`
+- поддерживать режимы `incremental` и `full`
 
 ### 3. Подключить PostgreSQL
 - использовать `sql/schema_v2.sql` как основную схему
@@ -34,7 +34,7 @@
 
 ### 6. Добавить базовые проверки
 - тесты на backend
-- проверку структуры sample JSON
+- проверку структуры JSON-файла импорта
 - smoke-check для основных API-маршрутов
 
 ## Приоритет на ближайший этап

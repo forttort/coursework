@@ -29,7 +29,7 @@ Backend реализован на `FastAPI` в `backend/main.py`.
 ```
 
 ### `GET /api/products`
-Возвращает список товаров из `data/products.sample.json`.
+Возвращает список товаров из `rinkan_products_v4.json`.
 
 Поддерживаемые query-параметры:
 - `q` — поиск по `title`, `brand_name`, `subcategory_name`

@@ -8,7 +8,7 @@
 Есть минимальный backend на `FastAPI` в `backend/main.py`.
 
 Он:
-- читает товары из `data/products.sample.json`
+- читает товары из `rinkan_products_v4.json`
 - отдает `GET /api/health`
 - отдает `GET /api/products`
 - отдает `GET /api/products/{source_product_id}`
@@ -30,8 +30,8 @@
 - фильтровать по общей категории
 - открывать страницу отдельного товара
 
-### 3. Sample-данные
-В `data/products.sample.json` сейчас лежит `5` товаров.
+### 3. JSON-данные
+В `rinkan_products_v4.json` сейчас лежит `10` товаров.
 
 В sample присутствуют категории:
 - `wear`
@@ -78,15 +78,12 @@
 - `products`
 - `product_images`
 
-Файл `sql/schema.sql` остался как более ранняя версия схемы.
-
 ## Что проверено
 - `backend/main.py` компилируется
 - `parser/rinkan_parser_v4.py` компилируется
-- функции backend корректно читают sample JSON
+- функции backend корректно читают JSON-файл с товарами
 
 ## Что ещё не сделано
-- loader `JSON -> PostgreSQL`
 - реальное подключение backend к PostgreSQL
 - API с пагинацией и сортировкой
 - фильтры по бренду, состоянию, размеру и полу на frontend
@@ -98,10 +95,10 @@
 - файл называется `parser/rinkan_parser_v4.py`, но внутри комментарии и CLI уже называют его `v7`
 - default output у парсера сейчас `rinkan_products_v7.json`
 - в корне лежит `rinkan_products_v4.json`, то есть naming сейчас не до конца синхронизирован
-- backend пока использует sample JSON, а не результат loader
+- backend пока использует локальный JSON, а не результат loader или БД
 
 ## Следующий практический шаг
 1. Привести naming парсера к одному виду
-2. Написать `loader/load_rinkan_to_postgres.py`
-3. Залить данные в PostgreSQL по `sql/schema_v2.sql`
-4. Перевести backend на работу с БД
+2. Залить данные в PostgreSQL по `sql/schema_v2.sql`
+3. Перевести backend на работу с БД
+4. Добавить отдельный refresh статусов товаров

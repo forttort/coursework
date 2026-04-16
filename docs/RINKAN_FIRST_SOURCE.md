@@ -6,7 +6,7 @@
 ## Почему это решение уже подтверждено репозиторием
 Под `RINKAN` уже существуют:
 - парсер `parser/rinkan_parser_v4.py`
-- sample-данные в `data/products.sample.json`
+- JSON-данные в `rinkan_products_v4.json`
 - схема БД `sql/schema_v2.sql`
 - frontend/backend MVP для просмотра товаров
 

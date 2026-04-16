@@ -83,10 +83,16 @@
 - `price_original`
 - `price_rub`
 - `delivery_estimate`
+- `status`
 - `description`
 - `product_url`
 - `main_image_url`
 - `parsed_at`
+- `first_seen_at`
+- `last_seen_at`
+- `last_checked_at`
+- `last_seen_in_listing_at`
+- `sold_at`
 - `created_at`
 - `updated_at`
 

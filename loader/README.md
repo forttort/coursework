@@ -3,7 +3,8 @@
 Следующий этап после парсера и MVP-сайта.
 
 ## Текущее состояние
-На момент обновления документации loader еще не реализован.
+В репозитории уже есть реализация:
+- `loader/load_rinkan_to_postgres.py`
 
 ## Цель
 Сделать загрузчик, который переносит данные из JSON парсера в PostgreSQL.
@@ -24,6 +25,7 @@
    - `currencies`
 3. upsert в `products`
 4. обновлять `product_images`
+5. в режиме `full` помечать товары, которых нет в текущем полном импорте, как `missing`
 
 ## База для реализации
 - схема: `sql/schema_v2.sql`
@@ -37,3 +39,46 @@
 То есть для RINKAN loader должен делать upsert по паре:
 - source = `RINKAN`
 - source_product_id = внешний id товара
+
+## Режимы работы
+
+### `incremental`
+- только вставляет новые товары
+- обновляет уже существующие
+- не трогает остальные записи
+
+Подходит для `new-arrivals` и ежедневных обновлений.
+
+### `full`
+- делает тот же upsert
+- дополнительно помечает отсутствующие в текущем полном импорте товары как `missing`
+
+Подходит для редкого полного прогона каталога.
+
+## Поля трекинга в `products`
+В таблице теперь есть:
+- `status`
+- `first_seen_at`
+- `last_seen_at`
+- `last_checked_at`
+- `last_seen_in_listing_at`
+- `sold_at`
+
+Это нужно, чтобы потом различать:
+- новые товары
+- давно известные товары
+- товары, пропавшие из полного импорта
+
+## Как запускать
+
+```bash
+cd /Users/danil/coursework
+source .venv/bin/activate
+python loader/load_rinkan_to_postgres.py \
+  --input /Users/danil/coursework/rinkan_products_v4.json \
+  --dsn "postgresql://postgres:postgres@localhost:5432/coursework" \
+  --mode incremental
+```
+
+Если база уже создана по старой версии схемы, сначала нужно прогнать:
+- `sql/alter_products_tracking.sql`

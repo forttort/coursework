@@ -65,12 +65,18 @@ CREATE TABLE products (
     price_original NUMERIC(12,2),
     price_rub NUMERIC(12,2),
     delivery_estimate VARCHAR(100),
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
     description TEXT,
     product_url TEXT NOT NULL,
     main_image_url TEXT,
-    parsed_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    parsed_at TIMESTAMPTZ,
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_checked_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen_in_listing_at TIMESTAMPTZ,
+    sold_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_products_brand
         FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE SET NULL,
@@ -84,6 +90,8 @@ CREATE TABLE products (
         FOREIGN KEY (source_id) REFERENCES sources(id) ON DELETE RESTRICT,
     CONSTRAINT fk_products_currency
         FOREIGN KEY (currency_id) REFERENCES currencies(id) ON DELETE RESTRICT,
+    CONSTRAINT chk_products_status
+        CHECK (status IN ('active', 'missing', 'sold', 'unknown')),
     CONSTRAINT uq_products_source_external
         UNIQUE (source_id, source_product_id)
 );
@@ -108,4 +116,7 @@ CREATE INDEX idx_products_subcategory_id ON products(subcategory_id);
 CREATE INDEX idx_products_condition_id ON products(condition_id);
 CREATE INDEX idx_products_source_id ON products(source_id);
 CREATE INDEX idx_products_currency_id ON products(currency_id);
+CREATE INDEX idx_products_status ON products(status);
+CREATE INDEX idx_products_last_seen_at ON products(last_seen_at);
+CREATE INDEX idx_products_last_checked_at ON products(last_checked_at);
 CREATE INDEX idx_product_images_product_id ON product_images(product_id);
