@@ -1,13 +1,50 @@
 # CURRENT STATE
 
-Актуальное состояние проекта на текущий момент.
+Актуальное состояние репозитория на текущий момент.
 
-## Что уже сделано
+## Что реально реализовано
 
-### 1. Парсер RINKAN
-В репозитории есть рабочий парсер `parser/rinkan_parser_v4.py`.
+### 1. Backend MVP
+Есть минимальный backend на `FastAPI` в `backend/main.py`.
 
-Он извлекает:
+Он:
+- читает товары из `data/products.sample.json`
+- отдает `GET /api/health`
+- отдает `GET /api/products`
+- отдает `GET /api/products/{source_product_id}`
+- раздает `frontend/index.html` и `frontend/product.html`
+
+Поддерживаемые query-параметры каталога:
+- `q`
+- `general_category`
+- `brand`
+
+### 2. Frontend MVP
+Есть 2 статические страницы:
+- `frontend/index.html` — каталог
+- `frontend/product.html` — карточка товара
+
+Текущий frontend умеет:
+- загрузить товары из API
+- искать по строке поиска
+- фильтровать по общей категории
+- открывать страницу отдельного товара
+
+### 3. Sample-данные
+В `data/products.sample.json` сейчас лежит `5` товаров.
+
+В sample присутствуют категории:
+- `wear`
+- `shoes`
+- `bags`
+- `goods`
+- `accessories`
+
+### 4. Парсер первого источника
+В репозитории есть файл `parser/rinkan_parser_v4.py`.
+
+По факту он уже парсит:
+- листинг -> карточки товаров
 - `title`
 - `source_product_id`
 - `product_url`
@@ -26,50 +63,45 @@
 - `description`
 - `parsed_at`
 
-### 2. Схема базы данных v2
-Для новой структуры данных добавлена схема `sql/schema_v2.sql`.
+### 5. Схема БД
+Актуальная схема — `sql/schema_v2.sql`.
 
-В ней учтены:
-- 3 уровня категорий
-- genders
-- condition ranks
-- size_label
-- measurements_text
-- products + product_images
+В ней уже есть:
+- `general_categories`
+- `categories`
+- `subcategories`
+- `brands`
+- `conditions`
+- `genders`
+- `sources`
+- `currencies`
+- `products`
+- `product_images`
 
-### 3. Документация по схеме
-Добавлен файл `docs/DB_SCHEMA_V2.md` с mapping парсера в БД.
+Файл `sql/schema.sql` остался как более ранняя версия схемы.
 
-### 4. MVP сайта
-Добавлен минимальный просмотр каталога без сложной верстки:
-- `backend/main.py`
-- `backend/requirements.txt`
-- `frontend/index.html`
-- `frontend/product.html`
-- `frontend/app.js`
-- `frontend/product.js`
-- `frontend/styles.css`
-- `data/products.sample.json`
+## Что проверено
+- `backend/main.py` компилируется
+- `parser/rinkan_parser_v4.py` компилируется
+- функции backend корректно читают sample JSON
 
-## Что умеет MVP сайта
-- открыть каталог товаров
-- получить список товаров из API
-- фильтровать по общей категории
-- искать по названию и бренду
-- открыть простую страницу товара
-- посмотреть изображения и базовые поля
+## Что ещё не сделано
+- loader `JSON -> PostgreSQL`
+- реальное подключение backend к PostgreSQL
+- API с пагинацией и сортировкой
+- фильтры по бренду, состоянию, размеру и полу на frontend
+- расчет `price_rub`
+- поле `delivery_estimate`
+- тесты для backend и parser
 
-## Что еще не сделано
-- loader JSON -> PostgreSQL
-- подключение сайта к реальной БД
-- price_rub
-- delivery_estimate
-- нормальная верстка
-- полноценные фильтры
-- backend для real database queries
+## Что бросается в глаза при анализе репы
+- файл называется `parser/rinkan_parser_v4.py`, но внутри комментарии и CLI уже называют его `v7`
+- default output у парсера сейчас `rinkan_products_v7.json`
+- в корне лежит `rinkan_products_v4.json`, то есть naming сейчас не до конца синхронизирован
+- backend пока использует sample JSON, а не результат loader
 
-## Следующий шаг
-Следующий логичный этап:
-- сделать `loader/load_rinkan_to_postgres.py`
-- наполнить PostgreSQL данными из JSON
-- перевести backend с sample JSON на запросы к БД
+## Следующий практический шаг
+1. Привести naming парсера к одному виду
+2. Написать `loader/load_rinkan_to_postgres.py`
+3. Залить данные в PostgreSQL по `sql/schema_v2.sql`
+4. Перевести backend на работу с БД
