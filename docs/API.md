@@ -42,32 +42,57 @@ Backend реализован на `FastAPI` в `backend/main.py`.
 - `q` — поиск по `title`, `brand_name`, `subcategory_name`
 - `general_category` — фильтр по общей категории
 - `brand` — фильтр по бренду
+- `status` — фильтр по статусу (`active`, `sold`, `missing`, `all`)
+- `limit` — размер страницы
+- `offset` — смещение
 
 Пример:
 ```text
-/api/products?q=dior&general_category=wear
+/api/products?q=chrome&general_category=accessories&status=active&limit=24&offset=0
 ```
 
-Пример элемента ответа:
+Пример ответа:
 ```json
 {
-  "title": "...",
-  "source_product_id": "10519-251030-0154",
-  "product_url": "...",
-  "main_image_url": "...",
-  "image_urls": ["..."],
-  "price_original": 29900,
-  "currency_code": "JPY",
-  "brand_name": "DIOR",
-  "gender_label": "メンズ",
-  "general_category_name": "wear",
-  "category_name": "shirts",
-  "subcategory_name": "t-shirts",
-  "condition_rank": "B",
-  "size_label": "M",
-  "measurements_text": "...",
-  "description": "...",
-  "parsed_at": "..."
+  "items": [
+    {
+      "title": "...",
+      "source_product_id": "10519-251030-0154",
+      "product_url": "...",
+      "main_image_url": "...",
+      "image_urls": ["..."],
+      "price_original": 29900,
+      "currency_code": "JPY",
+      "brand_name": "DIOR",
+      "gender_label": "メンズ",
+      "general_category_name": "wear",
+      "category_name": "shirts",
+      "subcategory_name": "t-shirts",
+      "condition_rank": "B",
+      "size_label": "M",
+      "measurements_text": "...",
+      "description": "...",
+      "parsed_at": "...",
+      "status": "active"
+    }
+  ],
+  "total": 48,
+  "limit": 24,
+  "offset": 0,
+  "data_source": "postgresql"
+}
+```
+
+### `GET /api/filter-options`
+Возвращает значения для фильтров каталога.
+
+Пример ответа:
+```json
+{
+  "brands": ["Chrome Hearts", "BALENCIAGA"],
+  "general_categories": ["accessories", "wear"],
+  "statuses": ["active", "sold"],
+  "data_source": "postgresql"
 }
 ```
 
@@ -77,7 +102,5 @@ Backend реализован на `FastAPI` в `backend/main.py`.
 Если товар не найден, backend отвечает `404`.
 
 ## Ограничения текущего API
-- нет подтвержденного end-to-end прогона на локальной PostgreSQL в рамках репозитория
-- нет пагинации
 - нет сортировки
-- нет фильтров по размеру, состоянию и полу
+- нет фильтров по размеру и полу

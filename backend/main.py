@@ -25,6 +25,9 @@ FRONTEND_DIR = BASE_DIR / "frontend"
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_PAGE_LIMIT = 24
+ACTIVE_STATUS = "active"
+
 app = FastAPI(title="Coursework Catalog MVP")
 app.add_middleware(
     CORSMiddleware,
@@ -91,16 +94,96 @@ def serialize_product_row(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def apply_json_filters(
+    products: list[dict[str, Any]],
+    q: Optional[str] = None,
+    general_category: Optional[str] = None,
+    brand: Optional[str] = None,
+    status: Optional[str] = None,
+) -> list[dict[str, Any]]:
+    result = products
+
+    if q:
+        needle = q.lower()
+        result = [
+            product for product in result
+            if needle in (product.get("title") or "").lower()
+            or needle in (product.get("brand_name") or "").lower()
+            or needle in (product.get("subcategory_name") or "").lower()
+        ]
+
+    if general_category:
+        result = [
+            product for product in result
+            if (product.get("general_category_name") or "") == general_category
+        ]
+
+    if brand:
+        result = [
+            product for product in result
+            if (product.get("brand_name") or "") == brand
+        ]
+
+    if status and status != "all":
+        result = [
+            product for product in result
+            if (product.get("status") or ACTIVE_STATUS) == status
+        ]
+
+    return result
+
+
 def fetch_products_from_db(
     q: Optional[str] = None,
     general_category: Optional[str] = None,
     brand: Optional[str] = None,
-) -> Optional[list[dict[str, Any]]]:
+    status: Optional[str] = None,
+    limit: int = DEFAULT_PAGE_LIMIT,
+    offset: int = 0,
+) -> Optional[dict[str, Any]]:
     dsn = get_database_dsn()
     if not dsn or psycopg is None or dict_row is None:
         return None
 
-    query = """
+    where_clause = "WHERE 1=1"
+    params: list[Any] = []
+
+    if status and status != "all":
+        where_clause += " AND p.status = %s"
+        params.append(status)
+    elif not status:
+        where_clause += " AND p.status = 'active'"
+
+    if q:
+        where_clause += """
+            AND (
+                p.title ILIKE %s
+                OR COALESCE(b.name, '') ILIKE %s
+                OR COALESCE(s.name, '') ILIKE %s
+            )
+        """
+        needle = f"%{q}%"
+        params.extend([needle, needle, needle])
+
+    if general_category:
+        where_clause += " AND COALESCE(gc.name, '') = %s"
+        params.append(general_category)
+
+    if brand:
+        where_clause += " AND COALESCE(b.name, '') = %s"
+        params.append(brand)
+
+    count_query = f"""
+        SELECT COUNT(*) AS total_count
+        FROM products p
+        LEFT JOIN brands b ON b.id = p.brand_id
+        LEFT JOIN subcategories s ON s.id = p.subcategory_id
+        LEFT JOIN categories c ON c.id = s.category_id
+        LEFT JOIN general_categories gc ON gc.id = c.general_category_id
+        {where_clause}
+    """
+
+    query = f"""
         SELECT
             p.title,
             p.source_product_id,
@@ -132,29 +215,8 @@ def fetch_products_from_db(
         LEFT JOIN conditions cond ON cond.id = p.condition_id
         LEFT JOIN currencies cur ON cur.id = p.currency_id
         LEFT JOIN product_images pi ON pi.product_id = p.id
-        WHERE p.status = 'active'
+        {where_clause}
     """
-
-    params: list[Any] = []
-
-    if q:
-        query += """
-            AND (
-                p.title ILIKE %s
-                OR COALESCE(b.name, '') ILIKE %s
-                OR COALESCE(s.name, '') ILIKE %s
-            )
-        """
-        needle = f"%{q}%"
-        params.extend([needle, needle, needle])
-
-    if general_category:
-        query += " AND COALESCE(gc.name, '') = %s"
-        params.append(general_category)
-
-    if brand:
-        query += " AND COALESCE(b.name, '') = %s"
-        params.append(brand)
 
     query += """
         GROUP BY
@@ -167,17 +229,105 @@ def fetch_products_from_db(
             s.name,
             cond.name
         ORDER BY COALESCE(p.last_seen_in_listing_at, p.last_seen_at, p.parsed_at, p.created_at) DESC, p.id DESC
+        LIMIT %s OFFSET %s
     """
 
     try:
         with psycopg.connect(dsn, row_factory=dict_row) as connection:
             with connection.cursor() as cursor:
-                cursor.execute(query, params)
+                cursor.execute(count_query, params)
+                count_row = cursor.fetchone()
+                total = count_row["total_count"] if count_row else 0
+                cursor.execute(query, [*params, limit, offset])
                 rows = cursor.fetchall()
-                return [serialize_product_row(row) for row in rows]
+                return {
+                    "items": [serialize_product_row(row) for row in rows],
+                    "total": total,
+                    "limit": limit,
+                    "offset": offset,
+                    "data_source": "postgresql",
+                }
     except Exception as error:
         logger.warning("PostgreSQL unavailable, fallback to JSON: %s", error)
         return None
+
+
+def fetch_filter_options_from_db() -> Optional[dict[str, Any]]:
+    dsn = get_database_dsn()
+    if not dsn or psycopg is None or dict_row is None:
+        return None
+
+    try:
+        with psycopg.connect(dsn, row_factory=dict_row) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT name FROM brands WHERE name IS NOT NULL ORDER BY name")
+                brands = [row["name"] for row in cursor.fetchall()]
+
+                cursor.execute("SELECT name FROM general_categories ORDER BY name")
+                general_categories = [row["name"] for row in cursor.fetchall()]
+
+                cursor.execute("SELECT DISTINCT status FROM products ORDER BY status")
+                statuses = [row["status"] for row in cursor.fetchall()]
+
+                return {
+                    "brands": brands,
+                    "general_categories": general_categories,
+                    "statuses": statuses,
+                    "data_source": "postgresql",
+                }
+    except Exception as error:
+        logger.warning("PostgreSQL unavailable, fallback to JSON filter options: %s", error)
+        return None
+
+
+def build_json_catalog(
+    q: Optional[str] = None,
+    general_category: Optional[str] = None,
+    brand: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = DEFAULT_PAGE_LIMIT,
+    offset: int = 0,
+) -> dict[str, Any]:
+    products = load_products_from_json()
+    filtered = apply_json_filters(
+        products,
+        q=q,
+        general_category=general_category,
+        brand=brand,
+        status=status,
+    )
+    total = len(filtered)
+    items = filtered[offset: offset + limit]
+    return {
+        "items": [
+            {
+                **item,
+                "status": item.get("status") or ACTIVE_STATUS,
+            }
+            for item in items
+        ],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "data_source": "json",
+    }
+
+
+def build_json_filter_options() -> dict[str, Any]:
+    products = load_products_from_json()
+    brands = sorted({product.get("brand_name") for product in products if product.get("brand_name")})
+    general_categories = sorted({product.get("general_category_name") for product in products if product.get("general_category_name")})
+    statuses = sorted({product.get("status") or ACTIVE_STATUS for product in products})
+    return {
+        "brands": brands,
+        "general_categories": general_categories,
+        "statuses": statuses,
+        "data_source": "json",
+    }
+
+
+def normalize_optional_string(value: Any) -> Optional[str]:
+    return value if isinstance(value, str) and value != "" else None
 
 
 def fetch_product_from_db(source_product_id: str) -> Optional[dict[str, Any]]:
@@ -255,35 +405,42 @@ def list_products(
     q: Optional[str] = Query(default=None),
     general_category: Optional[str] = Query(default=None),
     brand: Optional[str] = Query(default=None),
-) -> list[dict[str, Any]]:
-    db_products = fetch_products_from_db(q=q, general_category=general_category, brand=brand)
+    status: Optional[str] = Query(default="active"),
+    limit: int = Query(default=DEFAULT_PAGE_LIMIT, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> dict[str, Any]:
+    normalized_q = normalize_optional_string(q)
+    normalized_general_category = normalize_optional_string(general_category)
+    normalized_brand = normalize_optional_string(brand)
+    normalized_status = status if isinstance(status, str) else ACTIVE_STATUS
+
+    db_products = fetch_products_from_db(
+        q=normalized_q,
+        general_category=normalized_general_category,
+        brand=normalized_brand,
+        status=normalized_status,
+        limit=limit,
+        offset=offset,
+    )
     if db_products is not None:
         return db_products
 
-    products = load_products_from_json()
+    return build_json_catalog(
+        q=normalized_q,
+        general_category=normalized_general_category,
+        brand=normalized_brand,
+        status=normalized_status,
+        limit=limit,
+        offset=offset,
+    )
 
-    if q:
-        needle = q.lower()
-        products = [
-            product for product in products
-            if needle in (product.get("title") or "").lower()
-            or needle in (product.get("brand_name") or "").lower()
-            or needle in (product.get("subcategory_name") or "").lower()
-        ]
 
-    if general_category:
-        products = [
-            product for product in products
-            if (product.get("general_category_name") or "") == general_category
-        ]
-
-    if brand:
-        products = [
-            product for product in products
-            if (product.get("brand_name") or "") == brand
-        ]
-
-    return products
+@app.get("/api/filter-options")
+def get_filter_options() -> dict[str, Any]:
+    db_options = fetch_filter_options_from_db()
+    if db_options is not None:
+        return db_options
+    return build_json_filter_options()
 
 
 @app.get("/api/products/{source_product_id}")

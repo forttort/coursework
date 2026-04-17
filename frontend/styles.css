@@ -15,6 +15,13 @@ body {
   flex-wrap: wrap;
 }
 
+.toolbar input,
+.toolbar select,
+.toolbar button,
+.pagination button {
+  padding: 10px 12px;
+}
+
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -44,4 +51,16 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 8px;
   margin-top: 12px;
+}
+
+.pagination {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
 }

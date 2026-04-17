@@ -14,17 +14,26 @@
       <input id="searchInput" type="text" placeholder="Поиск по бренду или названию" />
       <select id="categorySelect">
         <option value="">Все общие категории</option>
-        <option value="wear">wear</option>
-        <option value="shoes">shoes</option>
-        <option value="bags">bags</option>
-        <option value="goods">goods</option>
-        <option value="accessories">accessories</option>
+      </select>
+      <select id="brandSelect">
+        <option value="">Все бренды</option>
+      </select>
+      <select id="statusSelect">
+        <option value="active">Только активные</option>
+        <option value="all">Все статусы</option>
+        <option value="sold">Проданные</option>
+        <option value="missing">Missing</option>
       </select>
       <button id="reloadButton" type="button">Обновить</button>
     </section>
 
     <p id="statusText">Загрузка...</p>
     <section id="productsGrid" class="products-grid"></section>
+    <section class="pagination">
+      <button id="prevPageButton" type="button">← Назад</button>
+      <span id="pageInfoText">Страница 1</span>
+      <button id="nextPageButton" type="button">Вперёд →</button>
+    </section>
   </main>
 
   <script src="/static/app.js"></script>
