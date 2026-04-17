@@ -40,11 +40,13 @@ Frontend получает товары через `/api/products`
 - `run_site.py` — поднимает сайт
 - `run_parser_new_arrivals.py` — запускает парсер по `new-arrivals` и сохраняет в `rinkan_products_v4.json`
 - `run_loader_incremental.py` — загружает `rinkan_products_v4.json` в локальный PostgreSQL
+- `run_refresh_statuses.py` — проверяет карточки товаров и обновляет статусы `active / missing / sold`
+- `run_daily_update.py` — делает весь daily pipeline: parser -> loader -> status refresh
 
 Оба файла сами используют интерпретатор проекта:
 - `/Users/danil/coursework/.venv/bin/python`
 
-`run_site.py` и `run_loader_incremental.py` по умолчанию используют локальную БД:
+`run_site.py`, `run_loader_incremental.py` и `run_refresh_statuses.py` по умолчанию используют локальную БД:
 - `postgresql://danil@localhost:5432/coursework`
 
 ### Через терминал
@@ -106,4 +108,5 @@ uvicorn backend.main:app --reload
 1. Поднять PostgreSQL по `sql/schema_v2.sql` или обновить существующую БД через `sql/alter_products_tracking.sql`
 2. Загрузить данные через `loader/load_rinkan_to_postgres.py`
 3. Запустить backend уже в режиме PostgreSQL
-4. Расширить API и фильтры на frontend
+4. Настроить регулярный `daily pipeline` и `status refresh`
+5. Расширить API и фильтры на frontend

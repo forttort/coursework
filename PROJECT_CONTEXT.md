@@ -28,6 +28,16 @@
 ### Целевая архитектура
 `RINKAN parser -> loader -> PostgreSQL -> FastAPI API -> frontend`
 
+## Daily pipeline
+Текущий практический pipeline теперь такой:
+
+1. `run_parser_new_arrivals.py`
+2. `run_loader_incremental.py`
+3. `run_refresh_statuses.py`
+
+И есть общий wrapper:
+- `run_daily_update.py`
+
 ## Текущая предметная область
 Основные группы товаров:
 - одежда
@@ -71,4 +81,4 @@
 - PostgreSQL schema design в `sql/schema_v2.sql`
 
 ## Ограничение текущей версии
-Проект уже показывает рабочий каталог, имеет loader и умеет читать PostgreSQL, но production-режим с реальной БД ещё не прогнан до конца на локальной среде.
+Проект уже показывает рабочий каталог, имеет loader, status refresh и умеет читать PostgreSQL, но ещё не настроен регулярный scheduler и не решён вопрос с картинками без VPN.

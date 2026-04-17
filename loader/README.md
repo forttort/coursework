@@ -11,6 +11,7 @@
 
 ## Целевой файл
 - `loader/load_rinkan_to_postgres.py`
+- `loader/refresh_product_statuses.py`
 
 ## Что должен делать loader
 1. читать JSON-файл с результатом парсера
@@ -82,3 +83,32 @@ python loader/load_rinkan_to_postgres.py \
 
 Если база уже создана по старой версии схемы, сначала нужно прогнать:
 - `sql/alter_products_tracking.sql`
+
+## Refresh статусов
+
+Отдельный скрипт:
+- `loader/refresh_product_statuses.py`
+
+Он проверяет product pages и обновляет статусы в БД.
+
+Пример запуска:
+
+```bash
+cd /Users/danil/coursework
+source .venv/bin/activate
+python loader/refresh_product_statuses.py \
+  --dsn "postgresql://danil@localhost:5432/coursework" \
+  --limit 100 \
+  --delay 0.2 \
+  --statuses active,missing
+```
+
+Для `RINKAN` основной текущий sold-out marker:
+- disabled-кнопка с текстом `在庫なし`
+
+## Daily wrappers
+
+Для удобства добавлены:
+- `run_loader_incremental.py`
+- `run_refresh_statuses.py`
+- `run_daily_update.py`
