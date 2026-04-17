@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Site" type="PythonConfigurationType" factoryName="Python">
+    <module name="coursework" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run_site.py" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <option name="EMULATE_TERMINAL" value="true" />
+    <option name="MODULE_MODE" value="false" />
+    <extension name="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+    <method v="2" />
+  </configuration>
+</component>

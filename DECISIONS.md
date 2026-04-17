@@ -11,7 +11,7 @@
 Это решение уже закреплено в артефактах проекта:
 - `parser/rinkan_parser_v4.py`
 - `rinkan_products_v4.json`
-- `data/products.sample.json`
+- `loader/load_rinkan_to_postgres.py`
 
 ### 3. Текущий backend-стек
 Для MVP выбран `FastAPI`.

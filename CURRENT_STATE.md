@@ -8,7 +8,8 @@
 Есть минимальный backend на `FastAPI` в `backend/main.py`.
 
 Он:
-- читает товары из `rinkan_products_v4.json`
+- читает товары из PostgreSQL, если настроено подключение
+- fallback'ается на `rinkan_products_v4.json`, если БД недоступна или не настроена
 - отдает `GET /api/health`
 - отдает `GET /api/products`
 - отдает `GET /api/products/{source_product_id}`
@@ -82,9 +83,9 @@
 - `backend/main.py` компилируется
 - `parser/rinkan_parser_v4.py` компилируется
 - функции backend корректно читают JSON-файл с товарами
+- backend-код для PostgreSQL добавлен и готов к запуску при настроенном DSN
 
 ## Что ещё не сделано
-- реальное подключение backend к PostgreSQL
 - API с пагинацией и сортировкой
 - фильтры по бренду, состоянию, размеру и полу на frontend
 - расчет `price_rub`
@@ -100,5 +101,5 @@
 ## Следующий практический шаг
 1. Привести naming парсера к одному виду
 2. Залить данные в PostgreSQL по `sql/schema_v2.sql`
-3. Перевести backend на работу с БД
+3. Запустить backend в режиме PostgreSQL и проверить API на живой БД
 4. Добавить отдельный refresh статусов товаров

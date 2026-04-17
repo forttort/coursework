@@ -15,10 +15,14 @@
 
 1. Парсер собирает товары с `RINKAN`
 2. Результат сохраняется в JSON
-3. Backend читает JSON из `rinkan_products_v4.json`
-4. Frontend получает товары через `/api/products`
+3. Backend читает данные из PostgreSQL, если настроен `DATABASE_URL` / `PG*`
+4. Если БД не настроена, backend fallback'ается на `rinkan_products_v4.json`
 
-То есть сейчас проект работает без PostgreSQL и без отдельного loader.
+Frontend получает товары через `/api/products`
+
+То есть сейчас проект может работать в двух режимах:
+- PostgreSQL mode
+- JSON fallback mode
 
 ## Что умеет MVP
 - открыть каталог товаров
@@ -35,9 +39,13 @@
 
 - `run_site.py` — поднимает сайт
 - `run_parser_new_arrivals.py` — запускает парсер по `new-arrivals` и сохраняет в `rinkan_products_v4.json`
+- `run_loader_incremental.py` — загружает `rinkan_products_v4.json` в локальный PostgreSQL
 
 Оба файла сами используют интерпретатор проекта:
 - `/Users/danil/coursework/.venv/bin/python`
+
+`run_site.py` и `run_loader_incremental.py` по умолчанию используют локальную БД:
+- `postgresql://danil@localhost:5432/coursework`
 
 ### Через терминал
 ```bash
@@ -83,19 +91,19 @@ uvicorn backend.main:app --reload
 - `backend` — API на `FastAPI`
 - `frontend` — статические HTML/CSS/JS-файлы MVP
 - `parser` — парсер первого источника `RINKAN`
-- `loader` — место под будущий загрузчик данных в PostgreSQL
+- `loader` — загрузка данных в PostgreSQL
 - `sql` — схемы БД
 - `data` — вспомогательные данные проекта
 - `docs` — актуальная документация по проекту
 
 ## Текущее ограничение
-- backend пока читает JSON, а не базу данных
-- loader в PostgreSQL уже реализован, но backend пока не переведен на БД
+- backend уже умеет читать PostgreSQL, но без настроенной БД работает в fallback на JSON
+- нет автоматических фоновых обновлений статусов товаров
 - нет пагинации, сортировки и расширенных фильтров
 - frontend минимальный и без UI-фреймворка
 
 ## Следующий логичный этап
 1. Поднять PostgreSQL по `sql/schema_v2.sql` или обновить существующую БД через `sql/alter_products_tracking.sql`
 2. Загрузить данные через `loader/load_rinkan_to_postgres.py`
-3. Перевести каталог с JSON на реальные запросы к БД
+3. Запустить backend уже в режиме PostgreSQL
 4. Расширить API и фильтры на frontend

@@ -24,12 +24,19 @@ Backend реализован на `FastAPI` в `backend/main.py`.
 Пример ответа:
 ```json
 {
-  "status": "ok"
+  "status": "ok",
+  "data_source": "json"
 }
 ```
 
+`data_source` сейчас показывает, какой источник предпочитает backend:
+- `postgresql`
+- `json`
+
 ### `GET /api/products`
-Возвращает список товаров из `rinkan_products_v4.json`.
+Возвращает список товаров из PostgreSQL, если подключение настроено.
+
+Если БД не настроена или недоступна, backend использует fallback на `rinkan_products_v4.json`.
 
 Поддерживаемые query-параметры:
 - `q` — поиск по `title`, `brand_name`, `subcategory_name`
@@ -70,7 +77,7 @@ Backend реализован на `FastAPI` в `backend/main.py`.
 Если товар не найден, backend отвечает `404`.
 
 ## Ограничения текущего API
-- данные берутся из JSON, а не из БД
+- нет подтвержденного end-to-end прогона на локальной PostgreSQL в рамках репозитория
 - нет пагинации
 - нет сортировки
 - нет фильтров по размеру, состоянию и полу
