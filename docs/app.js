@@ -38,15 +38,12 @@ function createCard(product) {
   const card = document.createElement('article');
   card.className = 'product-card';
 
-  const link = document.createElement('a');
-  link.className = 'product-card-link';
-  link.href = product.url || '#';
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
+  const content = document.createElement('div');
+  content.className = 'product-card-link';
 
   const strip = createText('div', 'showcase-card-strip', '');
   strip.appendChild(createText('span', '', 'HELLA.RESALE HELLA.RESALE HELLA.RESALE'));
-  link.appendChild(strip);
+  content.appendChild(strip);
 
   const frame = document.createElement('div');
   frame.className = 'product-image-frame is-loading';
@@ -68,7 +65,7 @@ function createCard(product) {
     frame.classList.remove('is-loading');
     frame.classList.add('is-missing');
   }
-  link.appendChild(frame);
+  content.appendChild(frame);
 
   const info = document.createElement('div');
   info.className = 'showcase-card-info';
@@ -76,9 +73,9 @@ function createCard(product) {
   info.appendChild(createText('h2', 'product-brand', product.brand || 'Без бренда'));
   info.appendChild(createText('p', 'product-size', `Размер ${product.size || '-'}`));
   info.appendChild(createText('p', 'product-price', formatPrice(product.price)));
-  link.appendChild(info);
+  content.appendChild(info);
 
-  card.appendChild(link);
+  card.appendChild(content);
   return card;
 }
 
