@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>HELLA.RESALE - каталог</title>
+  <link rel="icon" href="hella-logo.jpeg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-bar">
+      <a class="site-logo" href="#top" aria-label="HELLA.RESALE">
+        <img src="hella-logo.jpeg" alt="HELLA.RESALE">
+      </a>
+      <nav class="site-nav" aria-label="О проекте"><a href="#about">О нас</a></nav>
+    </div>
+  </header>
+
+  <main id="top" class="page">
+    <nav id="categories" class="quick-categories" aria-label="Быстрые категории"></nav>
+    <p id="message" class="catalog-message">Загрузка каталога...</p>
+    <section id="products" class="products-grid" aria-live="polite"></section>
+
+    <nav id="pagination" class="pagination" aria-label="Страницы каталога" hidden>
+      <button id="previousPage" type="button">Назад</button>
+      <span id="pageStatus"></span>
+      <button id="nextPage" type="button">Вперёд</button>
+    </nav>
+
+    <section id="about" class="showcase-about" aria-labelledby="aboutTitle">
+      <div class="showcase-about-heading">
+        <h2 id="aboutTitle">О нас</h2>
+        <p>Мы собираем товары с проверенных зарубежных ресейл-площадок.</p>
+      </div>
+      <ol class="showcase-about-flow">
+        <li class="showcase-about-step">
+          <span class="showcase-about-number">01</span>
+          <h3>Проверенные площадки</h3>
+          <p>Зарубежные аналоги ЦУМ Collect и Oskelly.</p>
+        </li>
+        <li class="showcase-about-step">
+          <span class="showcase-about-number">02</span>
+          <h3>ИИ-фильтрация</h3>
+          <p>Система сравнивает товар с российским рынком и оставляет позицию, если:</p>
+          <div class="showcase-about-criteria">
+            <span>Нет аналогов в России</span>
+            <b>или</b>
+            <span>Цена ниже на 20%+</span>
+          </div>
+        </li>
+        <li class="showcase-about-step">
+          <span class="showcase-about-number">03</span>
+          <h3>Ручная фильтрация</h3>
+          <p>Мы вручную проверяем позиции, прошедшие автоматический отбор.</p>
+        </li>
+        <li class="showcase-about-step showcase-about-result">
+          <span class="showcase-about-number">04</span>
+          <h3>Витрина</h3>
+          <p>После двух этапов проверки товар появляется в каталоге.</p>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
